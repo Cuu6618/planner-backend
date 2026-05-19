@@ -1,26 +1,21 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from openai import OpenAI
-from dotenv import load_dotenv
 import os
 import json
 
-load_dotenv()
-
 router = APIRouter()
-
-client = OpenAI(
-    api_key=os.getenv("deepseek_apikey"),
-    base_url="https://api.deepseek.com"
-)
-
 
 class AIRequest(BaseModel):
     text: str
 
-
 @router.post("/classify")
 def classify_tasks(req: AIRequest):
+    client = OpenAI(
+        api_key=os.getenv("DEEPSEEK_APIKEY"),
+        base_url="https://api.deepseek.com"
+    )
+    
     prompt = f"""
 你是一个任务管理助手。用户会输入一段话描述他要做的事情。
 请根据艾森豪威尔四象限法则，将这些事情分类。
@@ -48,7 +43,6 @@ def classify_tasks(req: AIRequest):
     )
 
     content = response.choices[0].message.content
-    # 清理可能的 markdown 格式
     content = content.replace("```json", "").replace("```", "").strip()
     result = json.loads(content)
     return result
